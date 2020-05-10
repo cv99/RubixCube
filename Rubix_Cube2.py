@@ -2,8 +2,6 @@ import pygame
 import pygame.gfxdraw
 import math
 from math import sqrt, cos, sin, atan, atan2
-import random
-import copy
 
 traceList = []
 
@@ -18,17 +16,22 @@ LightGrey = 200, 200, 200
 
 
 class MinCube:
-    def __init__(self, point_dict, faces, face_col_list=None):
-        self.pointDict = point_dict
+    def __init__(self, faces, face_col_list=None):
         self.faces = faces
-        if face_col_list is None:
-            self.faceColList = [(random.randint(127, 255), random.randint(127, 255), random.randint(127, 255)) for _ in
-                                range(len(faces))]
-        else:
-            self.faceColList = face_col_list
+        self.localMatrix = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]]
+        self.faceColList = face_col_list
+        self.pointDict = {}
+        for face in self.faces:
+            for p_num in face:
+                if p_num not in self.pointDict:
+                    self.pointDict[p_num] = pDict[p_num]
 
     def render(self, specificRotationMatrix, rotationOffset):
         colourCoordinationCounter = 0
+        specificRotationMatrix = matrix_m_with_matrix(specificRotationMatrix, self.localMatrix)
         for face in self.faces:
             if clockwise([flatten(self.pointDict[face[n]], specificRotationMatrix, rotationOffset) for n in range(3)]):
                 # Draw the coloured-in shape
@@ -48,9 +51,7 @@ class MinCube:
 
 
 def flatten(triple, rot_matrix, rot_offset):
-    """
-    Takes 3D coordinates, rotates them, and turns them into 2D coordinates.
-    """
+    """Takes 3D coordinates, rotates them, and turns them into 2D coordinates."""
     a = rot_offset[0] + triple[0]
     b = rot_offset[1] + triple[1]
     c = rot_offset[2] + triple[2]
@@ -62,7 +63,6 @@ def flatten(triple, rot_matrix, rot_offset):
     n = globalZoom + c / 99000
     a = ((a * n) + (250 * (1 - n)))
     b = ((b * n) + (250 * (1 - n)))
-
     return a, b
 
 
@@ -157,66 +157,37 @@ for x in range(4):
             m += 1
 
 # Generates the pieces, with their faces and colours.
+pOYG = MinCube([[56, 57, 61, 60], [60, 61, 45, 44], [60, 44, 40, 56]], face_col_list=[Orange, Green, Yellow])
+pOGW = MinCube([[58, 59, 63, 62], [62, 63, 47, 46], [59, 43, 47, 63]], face_col_list=[Orange, Green, White])
+pOYB = MinCube([[48, 49, 53, 52], [52, 36, 32, 48], [32, 33, 49, 48]], face_col_list=[Orange, Yellow, Blue])
+pBOW = MinCube([[50, 51, 55, 54], [34, 35, 51, 50], [51, 35, 39, 55]], face_col_list=[Orange, Blue, White])
+pWGR = MinCube([[27, 11, 15, 31], [31, 15, 14, 30], [11, 10, 14, 15]], face_col_list=[White, Green, Red])
+pRYG = MinCube([[12, 13, 9, 8], [28, 12, 8, 24], [28, 29, 13, 12]], face_col_list=[Red, Yellow, Green])
+pRYB = MinCube([[4, 5, 1, 0], [0, 1, 17, 16], [20, 4, 0, 16]], face_col_list=[Red, Blue, Yellow])
+pBWR = MinCube([[2, 3, 19, 18], [19, 3, 7, 23], [3, 2, 6, 7]], face_col_list=[Blue, White, Red])
 
-redYellowBlue = MinCube(copy.deepcopy(pDict), [[4, 5, 1, 0], [0, 1, 17, 16], [20, 4, 0, 16]],
-                        face_col_list=[Red, Blue, Yellow])
-yellowBlue = MinCube(copy.deepcopy(pDict), [[36, 20, 16, 32], [16, 17, 33, 32]],
-                     face_col_list=[Yellow, Blue])
-orangeYellowBlue = MinCube(copy.deepcopy(pDict), [[48, 49, 53, 52], [52, 36, 32, 48], [32, 33, 49, 48]],
-                           face_col_list=[Orange, Yellow, Blue])
-yellow = MinCube(copy.deepcopy(pDict), [[40, 24, 20, 36]],
-                 face_col_list=[Yellow])
-redYellow = MinCube(copy.deepcopy(pDict), [[8, 9, 5, 4], [24, 8, 4, 20]],
-                    face_col_list=[Red, Yellow])
-orangeYellow = MinCube(copy.deepcopy(pDict), [[52, 53, 57, 56], [56, 40, 36, 52]],
-                       face_col_list=[Orange, Yellow])
-redYellowGreen = MinCube(copy.deepcopy(pDict), [[12, 13, 9, 8], [28, 12, 8, 24], [28, 29, 13, 12]],
-                         face_col_list=[Red, Yellow, Green])
-yellowGreen = MinCube(copy.deepcopy(pDict), [[44, 28, 24, 40], [44, 45, 29, 28]],
-                      face_col_list=[Yellow, Green])
-orangeYellowGreen = MinCube(copy.deepcopy(pDict), [[56, 57, 61, 60], [60, 61, 45, 44], [60, 44, 40, 56]],
-                            face_col_list=[Orange, Green, Yellow])
-blue = MinCube(copy.deepcopy(pDict), [[17, 18, 34, 33]],
-               face_col_list=[Blue])
-blueOrange = MinCube(copy.deepcopy(pDict), [[49, 50, 54, 53], [33, 34, 50, 49]],
-                     face_col_list=[Orange, Blue])
-redBlue = MinCube(copy.deepcopy(pDict), [[5, 6, 2, 1], [1, 2, 18, 17]],
-                  face_col_list=[Red, Blue])
-red = MinCube(copy.deepcopy(pDict), [[9, 10, 6, 5]],
-              face_col_list=[Red])
-orange = MinCube(copy.deepcopy(pDict), [[53, 54, 58, 57]],
-                 face_col_list=[Orange])
-orangeGreen = MinCube(copy.deepcopy(pDict), [[57, 58, 62, 61], [61, 62, 46, 45]],
-                      face_col_list=[Orange, Green])
-green = MinCube(copy.deepcopy(pDict), [[45, 46, 30, 29]],
-                face_col_list=[Green])
-redGreen = MinCube(copy.deepcopy(pDict), [[13, 14, 10, 9], [29, 30, 14, 13]],
-                   face_col_list=[Red, Green])
-blueOrangeWhite = MinCube(copy.deepcopy(pDict), [[50, 51, 55, 54], [34, 35, 51, 50], [51, 35, 39, 55]],
-                          face_col_list=[Orange, Blue, White])
-blueWhite = MinCube(copy.deepcopy(pDict), [[18, 19, 35, 34], [35, 19, 23, 39]],
-                    face_col_list=[Blue, White])
-blueWhiteRed = MinCube(copy.deepcopy(pDict), [[2, 3, 19, 18], [19, 3, 7, 23], [3, 2, 6, 7]],
-                       face_col_list=[Blue, White, Red])
-whiteRed = MinCube(copy.deepcopy(pDict), [[23, 7, 11, 55 - 28], [7, 6, 10, 11]],
-                   face_col_list=[White, Red])
-white = MinCube(copy.deepcopy(pDict), [[39, 23, 27, 43]],
-                face_col_list=[White])
-orangeGreenWhite = MinCube(copy.deepcopy(pDict), [[58, 59, 63, 62], [62, 63, 47, 46], [59, 43, 47, 63]],
-                           face_col_list=[Orange, Green, White])
-orangeWhite = MinCube(copy.deepcopy(pDict), [[54, 55, 59, 58], [55, 39, 43, 59]],
-                      face_col_list=[Orange, White])
-whiteGreen = MinCube(copy.deepcopy(pDict), [[43, 27, 31, 47], [47, 31, 30, 46]],
-                     face_col_list=[White, Green])
-whiteGreenRed = MinCube(copy.deepcopy(pDict), [[27, 11, 15, 31], [31, 15, 14, 30], [11, 10, 14, 15]],
-                        face_col_list=[White, Green, Red])
+pOY = MinCube([[52, 53, 57, 56], [56, 40, 36, 52]], face_col_list=[Orange, Yellow])
+pYG = MinCube([[44, 28, 24, 40], [44, 45, 29, 28]], face_col_list=[Yellow, Green])
+pOG = MinCube([[57, 58, 62, 61], [61, 62, 46, 45]], face_col_list=[Orange, Green])
+pOW = MinCube([[54, 55, 59, 58], [55, 39, 43, 59]], face_col_list=[Orange, White])
+pYB = MinCube([[36, 20, 16, 32], [16, 17, 33, 32]], face_col_list=[Yellow, Blue])
+pBO = MinCube([[49, 50, 54, 53], [33, 34, 50, 49]], face_col_list=[Orange, Blue])
+pWG = MinCube([[43, 27, 31, 47], [47, 31, 30, 46]], face_col_list=[White, Green])
+pBW = MinCube([[18, 19, 35, 34], [35, 19, 23, 39]], face_col_list=[Blue, White])
+pRG = MinCube([[13, 14, 10, 9], [29, 30, 14, 13]], face_col_list=[Red, Green])
+pWR = MinCube([[23, 7, 11, 27], [7, 6, 10, 11]], face_col_list=[White, Red])
+pRY = MinCube([[8, 9, 5, 4], [24, 8, 4, 20]], face_col_list=[Red, Yellow])
+pRB = MinCube([[5, 6, 2, 1], [1, 2, 18, 17]], face_col_list=[Red, Blue])
 
-shapes = [redYellowBlue, yellowBlue, orangeYellowBlue, yellow,
-          redYellow, orangeYellow, redYellowGreen, yellowGreen,
-          orangeYellowGreen, blue, blueOrange,
-          redBlue, red, orange, orangeGreen, green, redGreen,
-          blueOrangeWhite, blueWhite, blueWhiteRed, whiteRed, white,
-          orangeGreenWhite, orangeWhite, whiteGreen, whiteGreenRed]
+pO = MinCube([[53, 54, 58, 57]], face_col_list=[Orange])
+pY = MinCube([[40, 24, 20, 36]], face_col_list=[Yellow])
+pG = MinCube([[45, 46, 30, 29]], face_col_list=[Green])
+pW = MinCube([[39, 23, 27, 43]], face_col_list=[White])
+pB = MinCube([[17, 18, 34, 33]], face_col_list=[Blue])
+pR = MinCube([[9, 10, 6, 5]], face_col_list=[Red])
+
+shapes = [pRYB, pYB, pOYB, pY, pRY, pOY, pRYG, pYG, pOYG, pB, pBO, pRB, pR, pO, pOG, pG, pRG, pBOW, pBW, pBWR,
+          pWR, pW, pOGW, pOW, pWG, pWGR]
 
 # Stores the move-codes, involved points, and rotation axes for the relevant key-presses.
 operationalGroupDictionary = {
@@ -243,34 +214,9 @@ reShapingDictionary = {
     'D-': ((23, 14, 6, 7, 8, 16, 25, 24), (6, 7, 8, 16, 25, 24, 23, 14))}
 
 # Stores the shape-number <-> shape references to be reshuffled.
-shapePointers = {
-    0: blueOrangeWhite,
-    1: blueWhite,
-    2: blueWhiteRed,
-    3: orangeWhite,
-    4: white,
-    5: whiteRed,
-    6: orangeGreenWhite,
-    7: whiteGreen,
-    8: whiteGreenRed,
-    9: blueOrange,
-    10: blue,
-    11: redBlue,
-    12: orange,
-    13: red,
-    14: orangeGreen,
-    15: green,
-    16: redGreen,
-    17: orangeYellowBlue,
-    18: yellowBlue,
-    19: redYellowBlue,
-    20: orangeYellow,
-    21: yellow,
-    22: redYellow,
-    23: orangeYellowGreen,
-    24: yellowGreen,
-    25: redYellowGreen
-}
+shapePointers = {0: pBOW, 1: pBW, 2: pBWR, 3: pOW, 4: pW, 5: pWR, 6: pOGW, 7: pWG, 8: pWGR, 9: pBO, 10: pB, 11: pRB,
+                 12: pO, 13: pR, 14: pOG, 15: pG, 16: pRG, 17: pOYB, 18: pYB, 19: pRYB, 20: pOY, 21: pY, 22: pRY,
+                 23: pOYG, 24: pYG, 25: pRYG}
 
 screen = pygame.display.set_mode((500, 500))
 pygame.display.set_caption('Rubix Cube simulation')
@@ -278,8 +224,7 @@ pygame.display.set_caption('Rubix Cube simulation')
 rotMatrix = [
     [1, 0, 0],
     [0, 1, 0],
-    [0, 0, 1]
-]
+    [0, 0, 1]]
 
 debugging = False
 scrambling = False

@@ -2,8 +2,9 @@ import time
 import datetime
 import sys
 from Rubix_Cube2 import *
+import random
 
-global debugging
+clock = pygame.time.Clock()
 
 pygame.font.init()
 myf = pygame.font.SysFont('Avenir', 36, False)
@@ -21,10 +22,12 @@ thetaZ = 0
 dragging = False
 startThetas = [0, 0]  # Necessary only for elimination of weak warning.
 startPos = []
+scrambling = False
 moving = False
 moveAxis = [0, 0, 0]
 moveAmount = 0
 sCount = 0
+dt = 0
 
 simPresses = []
 while running:
@@ -72,22 +75,21 @@ while running:
 
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_LEFT]:
-        thetaY -= 0.015
+        thetaY -= 0.006 * dt
     if pressed[pygame.K_RIGHT]:
-        thetaY += 0.015
+        thetaY += 0.006 * dt
     if pressed[pygame.K_UP]:
-        thetaX += 0.015
+        thetaX += 0.006 * dt
     if pressed[pygame.K_DOWN]:
-        thetaX -= 0.015
+        thetaX -= 0.006 * dt
     if pressed[pygame.K_COMMA]:
         thetaZ -= 0.02
     if pressed[pygame.K_PERIOD]:
         thetaZ += 0.02
 
     # Game logic
-
     if moving:
-        moveAmount += 0.03
+        moveAmount += 0.008 * dt
 
     if (moving and not -math.pi / 2 < moveAmount < math.pi / 2) or scrambling:
         # Finish a move.
@@ -108,25 +110,25 @@ while running:
         for m in operationalGroup:
             for p in m.pointDict.keys():
                 # Permanently move the pieces
-                l = m.pointDict[p]
-                l[0], l[1], l[2] = l[0] - 250, l[1] - 250, l[2] - 250
-                l = matrix_multiply(m.pointDict[p], operationalMatrix)
-                m.pointDict[p] = [l[0] + 250, l[1] + 250, l[2] + 250]
-        try:
-            store = [shapePointers[n] for n in reShapingDictionary[moveKey][1]]
-            for n, x in enumerate(reShapingDictionary[moveKey][0]):
-                shapePointers[x] = store[n]
-        except KeyError:  # Sometimes the key shows up as None.
-            pass
+                coors = m.pointDict[p]
+                coors[0], coors[1], coors[2] = coors[0] - 250, coors[1] - 250, coors[2] - 250
+                coors = matrix_multiply(m.pointDict[p], operationalMatrix)
+                m.pointDict[p] = [coors[0] + 250, coors[1] + 250, coors[2] + 250]
+
+        store = [shapePointers[n] for n in reShapingDictionary[moveKey][1]]
+        for n, x in enumerate(reShapingDictionary[moveKey][0]):
+            shapePointers[x] = store[n]
 
         moveAmount = 0
         moveAxis = [0, 0, 0]
         tG = []
 
     if scrambling:
-        simPresses.append(pygame.event.Event(pygame.KEYDOWN,
-                                             key=random.choice([pygame.K_l, pygame.K_r, pygame.K_u,
-                                                                pygame.K_d, pygame.K_f, pygame.K_b])))
+        # Create a simulated key press with a random side and add it to the event loop.
+        # This method may create no anticlockwise turns.
+        simPress = pygame.event.Event(pygame.KEYDOWN, {})
+        simPress.key = random.choice([pygame.K_l, pygame.K_r, pygame.K_u, pygame.K_d, pygame.K_f, pygame.K_b])
+        simPresses.append(simPress)
         sCount += 1
     if sCount > 30:
         sCount = 0
@@ -160,5 +162,6 @@ while running:
     timerPlq = myf.render(str(datetime.timedelta(seconds=(int(time.time() - startTime)))), True, (255, 255, 255))
     screen.blit(timerPlq, (0, 0))
 
+    dt = clock.tick()
     pygame.display.flip()
 pygame.quit()
